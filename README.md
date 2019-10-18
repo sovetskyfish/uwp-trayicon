@@ -1,4 +1,4 @@
-# Show an icon in the tray for UWP/UWP显示托盘图标
+# Show an icon in the tray for UWP/为UWP显示托盘图标
 
 ![](screenshot.png)
 

@@ -12,7 +12,7 @@ namespace TrayEXE
 {
     class Program
     {
-        //A mutex to prevent the UWP part launch multiple instances of the EXE part.
+        //A mutex to prevent the UWP part from launching multiple instances of the EXE part.
         static Mutex mutex = new Mutex(true, "{4291b888-e528-4f46-a5fd-f7d669aad428}");
 
         static void Main(string[] args)

@@ -19,7 +19,7 @@ namespace TrayEXE
         {
             if (mutex.WaitOne(TimeSpan.Zero, true))
             {
-                //Construct and show the tray icon and it's context menu
+                //Construct and show the tray icon and its context menu
                 NotifyIcon trayIcon = new NotifyIcon();
                 trayIcon.Text = "UWP Tray Icon";
                 trayIcon.Icon = new Icon(SystemIcons.Application, 40, 40);

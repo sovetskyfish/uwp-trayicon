@@ -1,5 +1,9 @@
 # Show an icon in the tray for UWP/为UWP显示托盘图标
 
+It will stay running in the tray after you closed the UWP main window.
+
+在关闭UWP的主窗口后，托盘图标将继续运行，常驻于托盘。
+
 ![](screenshot.png)
 
 # How does it work/如何工作

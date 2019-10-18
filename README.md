@@ -1,3 +1,7 @@
+# Show an icon in the tray for UWP/UWP显示托盘图标
+
+![](screenshot.png)
+
 # How does it work/如何工作
 
 By declaring the `runFullTrust` capability in `Package.appxmanifest`, we can launch a bundled non-UWP executable when launching the app. We rely on that non-UWP exe to show the tray icon and its context menu.

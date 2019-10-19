@@ -7,8 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
+    <Page.Transitions/>
     <Grid>
-        <TextBlock x:Name="blk" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <StackPanel Orientation="Vertical" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock x:Name="blk" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Button Margin="15" HorizontalAlignment="Center" Click="Button_Click">Ping!</Button>
+        </StackPanel>
     </Grid>
 </Page>

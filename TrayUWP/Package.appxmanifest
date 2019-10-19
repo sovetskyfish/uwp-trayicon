@@ -58,6 +58,10 @@
             <uap5:ExecutionAlias Alias="TrayUWP.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
+        <!--Declare the use of AppService extension-->
+        <uap:Extension Category="windows.appService">
+          <uap:AppService Name="CommunicationService" />
+        </uap:Extension>
       </Extensions>
     </Application>
   </Applications>

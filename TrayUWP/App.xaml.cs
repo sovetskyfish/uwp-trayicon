@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.ApplicationModel.AppService;
+using Windows.ApplicationModel.Background;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
 namespace TrayUWP
@@ -32,10 +37,67 @@ namespace TrayUWP
             this.Suspending += OnSuspending;
         }
 
+        //Command line arguments
+        string cmdArgs = null;
+
+        //The connection
+        public static AppServiceConnection Connection = null;
+
+        BackgroundTaskDeferral appServiceDeferral = null;
+
+        //Initializes the app service on the host process 
+        protected override void OnBackgroundActivated(BackgroundActivatedEventArgs args)
+        {
+            base.OnBackgroundActivated(args);
+            if (args.TaskInstance.TriggerDetails is AppServiceTriggerDetails)
+            {
+                appServiceDeferral = args.TaskInstance.GetDeferral();
+                args.TaskInstance.Canceled += OnTaskCanceled;
+
+                AppServiceTriggerDetails details = args.TaskInstance.TriggerDetails as AppServiceTriggerDetails;
+                Connection = details.AppServiceConnection;
+                Connection.RequestReceived += Connection_RequestReceived;
+            }
+        }
+
+        Frame rootFrame;
+
+        private async void Connection_RequestReceived(AppServiceConnection sender, AppServiceRequestReceivedEventArgs args)
+        {
+            var messageDeferral = args.GetDeferral();
+            try
+            {
+                string value = args.Request.Message.First().Value.ToString();
+                //Send a response, prevent the non-UWP part from waiting.
+                await args.Request.SendResponseAsync(new ValueSet() { new KeyValuePair<string, object>("response", value) });
+                if (value == "Exit")
+                {
+                    Current.Exit();
+                }
+                await rootFrame.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    rootFrame.Navigate(typeof(MainPage), value, new SuppressNavigationTransitionInfo());
+                });
+            }
+            finally
+            {
+                //Complete the deferral, telling the system we have completed the response.
+                messageDeferral.Complete();
+            }
+        }
+
+        //Associate the cancellation handler with the background task 
+        private void OnTaskCanceled(IBackgroundTaskInstance sender, BackgroundTaskCancellationReason reason)
+        {
+            if (this.appServiceDeferral != null)
+            {
+                //Complete the service deferral.
+                this.appServiceDeferral.Complete();
+            }
+        }
+
         protected override void OnActivated(IActivatedEventArgs args)
         {
-            string cmdArgs = null;
-
             //When activated by command line
             if (args.Kind == ActivationKind.CommandLineLaunch)
             {
@@ -47,7 +109,7 @@ namespace TrayUWP
                 }
             }
 
-            Frame rootFrame = Window.Current.Content as Frame;
+            rootFrame = Window.Current.Content as Frame;
 
             if (rootFrame == null)
             {
@@ -62,6 +124,14 @@ namespace TrayUWP
             base.OnActivated(args);
         }
 
+        //LaunchFullTrustProcess with a string passed via local settings container
+        public static async Task LaunchFullTrustProcess(string Parameter = "nothing")
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            settings.Values["Parameter"] = Parameter;
+            await FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
+        }
+
         /// <summary>
         /// 在应用程序由最终用户正常启动时进行调用。
         /// 将在启动应用程序以打开特定文件等情况下使用。
@@ -69,7 +139,7 @@ namespace TrayUWP
         /// <param name="e">有关启动请求和过程的详细信息。</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            Frame rootFrame = Window.Current.Content as Frame;
+            rootFrame = Window.Current.Content as Frame;
 
             // 不要在窗口已包含内容时重复应用程序初始化，
             // 只需确保窗口处于活动状态

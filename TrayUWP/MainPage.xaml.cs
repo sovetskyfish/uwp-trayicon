@@ -35,11 +35,25 @@ namespace TrayUWP
             //Run the bundled EXE to show a tray icon.
             //You must configure your Package.appxmanifest correctly.
             if (string.IsNullOrEmpty(e.Parameter as string))
-                _ = FullTrustProcessLauncher.LaunchFullTrustProcessForCurrentAppAsync();
+                _ = App.LaunchFullTrustProcess();
 
             //Receive the commands.
-            blk.Text = string.IsNullOrEmpty(e.Parameter as string) ? "You just launched this app." : (e.Parameter as string);
-            if (e.Parameter as string == "Exit") Application.Current.Exit();
+            if (e.Parameter as string == "sync")
+            {
+                blk.Text = "Synchronizing...";
+                //Tell the non-UWP part to sync
+                _ = App.LaunchFullTrustProcess("sync");
+            }
+            else blk.Text = string.IsNullOrEmpty(e.Parameter as string) ? "Stand by." : (e.Parameter as string);
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var res = await App.Connection.SendMessageAsync(new ValueSet()
+            {
+                new KeyValuePair<string, object>("request", "ping")
+            });
+            blk.Text = (string)res.Message.Values.First();
         }
     }
 }
